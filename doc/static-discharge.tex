@@ -1,0 +1,243 @@
+\documentclass[a4paper]{article}
+
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+
+% define colors used in this style
+\definecolor{cornellred}{rgb}{0.7, 0.11, 0.11}
+\definecolor{airforceblue}{rgb}{0.36, 0.54, 0.66}
+\definecolor{lightgray}{rgb}{0.85, 0.85, 0.85}
+
+% set the list style
+\lstset{%
+	backgroundcolor=\color{lightgray},
+	basicstyle=\footnotesize,
+	captionpos=b,
+	keepspaces=true,
+	frame=single,
+	framesep=10pt}
+
+% Set the font to sans serif
+\renewcommand{\familydefault}{\sfdefault}
+
+% agents that will be used and should be highlighted
+\newcommand{\terminal}{\textbf{\color{cornellred} Terminal }}
+\newcommand{\device}{\textbf{ \color{airforceblue} Device }}
+\newcommand{\user}{\textbf{\color{gray} User }}
+
+\begin{document}
+
+\author{Michael Hawkins}
+\title{%
+	Static Discharge\\
+	\large Bitcoin payments method over\\
+	Near Field Communication (NFC)}
+
+\maketitle
+
+\section{Overview}
+Near Field Communication (NFC) is used for contactless payment in bank cards and
+more recently it has been integrated into mobile phones for use in apps such as
+google or apple pay.\\
+This project provides a secure transport layer for point of sale lightning
+transactions by connecting devices over NFC and interfacing with existing
+lightning wallet implementations.
+
+\section{Security}
+Lightning point of sale transactions are normally conducted via QR Codes which
+provide a one-way interface, encoding a lightning invoice that is then
+transferred optically between devices.  The invoice is encoded as plain text
+and cannot be encrypted using a PKI due to the inability to exchange keys.  This
+means that the invoice can be intercepted and decoded by any QR Code reader with
+visibility of the genrated code.\\
+
+NFC provides an interface for bi-directional communication between devices which
+enables the use of encryption via key exhange.  This can be added to the
+transport of transaction data and greatly improve the security model of making a
+lightning payment through the range that the transaction data is visible and the
+ability to read the transaction data if it was intercepted.\\
+
+\section{Use Case}
+A real world example of a MFC point of sale system, we can look at systems that
+require a successful payment to gain access to transport.  Transport For London
+use a system of NFC readers to allow travellers to pay for travel via NFC as an
+alternative to purchasing traditional paper tickets.\\
+
+Users present their NFC device to a terminal that attempts to make a transaction
+that, if successful, unlocks the turnstile and allows them access to the
+train platform or informs the bus driver that payment has been received.\\
+
+\section{objectives}
+From a design point of view we have a service (access to train platform) and 3
+actors:
+\begin{itemize}
+    \item \user the entity that requests a service
+    \item \device used by the \user to interact with the service
+    \item \terminal that provides the service
+\end{itemize}
+
+To break the system down into the simplest form requires the following:
+\begin{itemize}
+	\item \terminal MUST generate invoice
+	\item \device MUST read an invoice
+	\item \device MUST crate a lightning transaction using the invoice
+	\item \user SHOULD be notified of the transaction
+	\item \terminal SHOULD confirm the transaction
+\end{itemize}
+
+Constraints on the system are:
+\begin{itemize}
+    \item communication between \terminal and \device MUST be over NFC
+    \item lightning invoices MUST be unique
+	\item communications SHOULD be encrypted
+	\item transactions SHOULD be made without \user input
+\end{itemize}
+
+\section{Technical Specification}
+
+\subsection{\terminal}
+\subsubsection{NFC}
+
+\begin{table}
+\centering
+\begin{tabular}{ | l | l | c | }
+\hline
+\textbf{Description} & \textbf{Label} & \textbf{Pin} \\
+\hline
+Serial Data Signal & SDA & 24 \\
+\hline
+Serial Clock & SCK & 23 \\
+\hline
+Master Out Slave In & MOSI & 19 \\
+\hline
+Master In Slave Out & MISO & 21 \\
+\hline
+Interrupt Request & IRQ & None \\
+\hline
+Ground Power & GND & 6 \\
+\hline
+Reset-Circuit & RST & 22 \\
+\hline
+(3.3v Power In & 3.3v & 1 \\
+\hline
+\end{tabular}
+\caption{RC522 to Raspberry Pi pin mapping}
+\label{table:RC522}
+\end{table}
+
+The terminal is created using a Raspberry PI with a RC522 circuit.  To connect the
+RC522, header pins are soldered onto the board and then wired to the PI GPIO pins.
+The RC522 board provides the interfaces listed in Table \ref{table:RC522} on page
+\pageref{table:RC522}.
+
+
+We use python and the library MFCRF522 to interact with the circuit and provide the
+methods needed to read and write using NFC.
+
+\subsubsection{Bitcoin}
+The Raspberry Pi runs a \href{https://github.com/bitcoin/bitcoin}{bitcoin core} node
+connected to the testnet3 network.
+
+\subsubsection{LND}
+An instance of \href(https://github.com/lightningnetwork/lnd){LND} is also running as
+a backend for the mobile wallet\footnote{This was a comprimise as I had wanted a
+standalone app for the mobile device but the only wallet I could get running that I
+could easily develop with was the LN-Zap wallet}
+
+The LND node was configured to avoid conflicting ports with the c-lightning instance,
+using the bitcoind backend, connected to the testnet.  It was also configured to
+listen on the LAN network address (10.6.5.14) for rpc commands as the zap wallet
+will be using it.
+
+In order to link the Zap wallet to the LND node I also had to install
+\href{https://github.com/LN-Zap/lndconnect}{lndconnect} in order to generate the
+lnconnect url needed (sigh).  Once installed I found that I couldn't generate a
+readable form on the command line so needed to run the following command and then
+generate a \href{https://www.online-qrcode-generator.com/}{QR Code online}
+
+\begin{lstlisting}[%
+	caption=Query to generate lnconnect url using lndconnect in bash shell,
+	language=bash]
+MACAROON_HOME=~/.lnd/data/chain/bitcoin/testnet
+./bin/lndconnect -j \
+	--lnddir ~/.lnd/ \
+	--host 10.6.5.14 \
+	--adminmacaroonpath=\${MACAROON\_HOME}/admin.macaroon \
+	--datadir=~/.lnd/data \
+	--tlscertpath=~/.lnd/tls.cert
+\end{lstlisting}
+
+\subsubsection{C-Lightning}
+An instance of \href{https://github.com/ElementsProject/lightning}{c-lightning} is
+running and connected to the local bitcoind instance.
+
+To simplify the network, the node is connected to the LND instance as a peer and
+bilateral channels open between the two to avoid any routing issues during testing
+and demonstrations.
+
+\subsubsection{Invoice Provider}
+We use python and the library pylighting to interact with the lightningd instance and
+provide the methods needed to generate an invoice.
+
+\subsection{Mobile Hardware}
+The mobile device used for development is a oneplus A5000 running Android 9.  This has
+developer mode and NFC enabled:
+\begin{quote}
+Settings > Bluetooth and device connection > Connection preferences > NFC
+\end{quote}
+
+\subsection{Mobile Software}
+\subsubsection{Wallet Selection}
+To avoid having to create a lightning wallet, the functionality for communicating over
+NFC is built into the open source \href{https://github.com/LN-Zap/zap-android}{Zap}
+wallet.  The advantage that this wallet had over the other wallets I evaluated was
+simply that I could compile it!
+
+I was suprised by the relatively small selection of mobile wallets available and
+even more so by the problems that I had in being able to set up a development
+environment to work on them.
+
+\begin{itemize}
+\item Eclair Wallet would have been my first choice as it is a full lightning node
+implementation in Java that I'm comfortable programming with.  Unfortunately getting it
+to build in android studio was beyond me.  I believe that this was due to eclair-core
+being written in Scala which I was able to compile successfully but when including the
+jar it looked like I was missing some of the standard library.
+
+\item \href{https://github.com/btcontract/lnwallet}{Bitcoin Lightning Wallet} is written
+in Scala so after my experience with eclair I was put off somewhat and having never
+writen in Scala before I thought that the learning curve would be too steep to get going
+with using it in the hackathon.
+
+\item \href{https://github.com/bluewallet/bluewallet}{Bluewallet} is wallet written in
+Javascript (nodejs) that I wasn't able to build. I think that there was/is a problem
+with my development environment that stops me from running react-native applications.
+
+\item Lightning labs \href{https://github.com/lightninglabs/lightning-app}{mobile wallet}
+was written in Javascript and the build instructions lean heavily towards development
+using Apple Mac (I'm rocking linux). Once again not able to run this due to my dev
+environment.
+
+\item \href{}{Spark} is another wallet that was on my radar but never tried this as it
+wasn't a complete lightning node and is written in Javascript, both of which put me off.
+\end{itemize}
+
+\subsubsection{Modifications}
+\verb|SendPaymentActivity.java| is the class containing the methods for sending the
+lightning (and bitcoin) payments.
+\verb|ScanActivity| is the class that is used as a template for creating the intent as
+it defines the QR interface.  We'll be creating the NFC interface which is a stripped
+down version of this.
+
+\subsection{\user}
+The \user should have minimal input in the interaction.  A constraint of NFC on Android
+is that the scrren needs to be on for NFC, this the user will do before presentig the
+\device to the \terminal.
+
+The \device SHOULD show a notification to let the \user know that an interactoin has
+taken place.  The standard form of this is with a vibration but it would also be nice to
+have an onscreen display of the status of the interaction.
+
+\end{document}
