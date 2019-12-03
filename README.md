@@ -43,41 +43,39 @@ objectives
 From a design point of view we have a service (access to train platform)
 and 3 actors:
 
--   [ **User** ]{}the entity that requests a service
+-   **USER** the entity that requests a service
 
--   [ **Device** ]{}used by the [ **User** ]{}to interact with the
-    service
+-   **DEVICE** used by the **USER** to interact with the service
 
--   [ **Terminal** ]{}that provides the service
+-   **TERMINAL** that provides the service
 
 To break the system down into the simplest form requires the following:
 
--   [ **Terminal** ]{}MUST generate invoice
+-   **TERMINAL** MUST generate invoice
 
--   [ **Device** ]{}MUST read an invoice
+-   **DEVICE** MUST read an invoice
 
--   [ **Device** ]{}MUST crate a lightning transaction using the invoice
+-   **DEVICE** MUST crate a lightning transaction using the invoice
 
--   [ **User** ]{}SHOULD be notified of the transaction
+-   **USER** SHOULD be notified of the transaction
 
--   [ **Terminal** ]{}SHOULD confirm the transaction
+-   **TERMINAL** SHOULD confirm the transaction
 
 Constraints on the system are:
 
--   communication between [ **Terminal** ]{}and [ **Device** ]{}MUST be
-    over NFC
+-   communication between **TERMINAL** and **DEVICE** MUST be over NFC
 
 -   lightning invoices MUST be unique
 
 -   communications SHOULD be encrypted
 
--   transactions SHOULD be made without [ **User** ]{}input
+-   transactions SHOULD be made without **USER** input
 
 Technical Specification
 =======================
 
-[ **Terminal** ]{}
-------------------
+**TERMINAL**
+------------
 
 ### NFC
 
@@ -209,18 +207,17 @@ class that is used as a template for creating the intent as it defines
 the QR interface. We’ll be creating the NFC interface which is a
 stripped down version of this.
 
-[ **User** ]{}
---------------
+USER
+----
 
-The [ **User** ]{}should have minimal input in the interaction. A
-constraint of NFC on Android is that the scrren needs to be on for NFC,
-this the user will do before presentig the [ **Device** ]{}to the [
-**Terminal** ]{}.
+The **USER** should have minimal input in the interaction. A constraint
+of NFC on Android is that the scrren needs to be on for NFC, this the
+user will do before presentig the **DEVICE** to the **DEVICE**.
 
-The [ **Device** ]{}SHOULD show a notification to let the [ **User**
-]{}know that an interactoin has taken place. The standard form of this
-is with a vibration but it would also be nice to have an onscreen
-display of the status of the interaction.
+The **DEVICE** SHOULD show a notification to let the **USER** know that
+an interactoin has taken place. The standard form of this is with a
+vibration but it would also be nice to have an onscreen display of the
+status of the interaction.
 
 [^1]: This was a comprimise as I had wanted a standalone app for the
     mobile device but the only wallet I could get running that I could

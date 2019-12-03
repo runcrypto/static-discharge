@@ -73,31 +73,31 @@ train platform or informs the bus driver that payment has been received.\\
 From a design point of view we have a service (access to train platform) and 3
 actors:
 \begin{itemize}
-    \item \user the entity that requests a service
-    \item \device used by the \user to interact with the service
-    \item \terminal that provides the service
+    \item \textbf{USER} the entity that requests a service
+    \item \textbf{DEVICE} used by the \textbf{USER} to interact with the service
+    \item \textbf{TERMINAL} that provides the service
 \end{itemize}
 
 To break the system down into the simplest form requires the following:
 \begin{itemize}
-	\item \terminal MUST generate invoice
-	\item \device MUST read an invoice
-	\item \device MUST crate a lightning transaction using the invoice
-	\item \user SHOULD be notified of the transaction
-	\item \terminal SHOULD confirm the transaction
+	\item \textbf{TERMINAL} MUST generate invoice
+	\item \textbf{DEVICE} MUST read an invoice
+	\item \textbf{DEVICE} MUST crate a lightning transaction using the invoice
+	\item \textbf{USER} SHOULD be notified of the transaction
+	\item \textbf{TERMINAL} SHOULD confirm the transaction
 \end{itemize}
 
 Constraints on the system are:
 \begin{itemize}
-    \item communication between \terminal and \device MUST be over NFC
+    \item communication between \textbf{TERMINAL} and \textbf{DEVICE} MUST be over NFC
     \item lightning invoices MUST be unique
 	\item communications SHOULD be encrypted
-	\item transactions SHOULD be made without \user input
+	\item transactions SHOULD be made without \textbf{USER} input
 \end{itemize}
 
 \section{Technical Specification}
 
-\subsection{\terminal}
+\subsection{\textbf{TERMINAL}}
 \subsubsection{NFC}
 
 \begin{table}
@@ -231,12 +231,12 @@ lightning (and bitcoin) payments.
 it defines the QR interface.  We'll be creating the NFC interface which is a stripped
 down version of this.
 
-\subsection{\user}
-The \user should have minimal input in the interaction.  A constraint of NFC on Android
+\subsection{USER}
+The \textbf{USER} should have minimal input in the interaction.  A constraint of NFC on Android
 is that the scrren needs to be on for NFC, this the user will do before presentig the
-\device to the \terminal.
+\textbf{DEVICE} to the \textbf{DEVICE}.
 
-The \device SHOULD show a notification to let the \user know that an interactoin has
+The \textbf{DEVICE} SHOULD show a notification to let the \textbf{USER} know that an interactoin has
 taken place.  The standard form of this is with a vibration but it would also be nice to
 have an onscreen display of the status of the interaction.
 
