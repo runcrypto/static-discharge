@@ -1,4 +1,9 @@
 doc: README.md
 
 README.md: doc/static-discharge.tex
-	pandoc -i doc/static-discharge.tex -o README.md
+	pandoc -f latex -t markdown-pipe_tables-simple_tables -o README.md doc/static-discharge.tex
+
+all: doc
+
+clean:
+	rm README.md

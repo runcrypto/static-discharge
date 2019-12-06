@@ -100,41 +100,15 @@ Constraints on the system are:
 \subsection{\textbf{TERMINAL}}
 \subsubsection{NFC}
 
-\begin{table}
-\centering
-\begin{tabular}{ | l | l | c | }
-\hline
-\textbf{Description} & \textbf{Label} & \textbf{Pin} \\
-\hline
-Serial Data Signal & SDA & 24 \\
-\hline
-Serial Clock & SCK & 23 \\
-\hline
-Master Out Slave In & MOSI & 19 \\
-\hline
-Master In Slave Out & MISO & 21 \\
-\hline
-Interrupt Request & IRQ & None \\
-\hline
-Ground Power & GND & 6 \\
-\hline
-Reset-Circuit & RST & 22 \\
-\hline
-(3.3v Power In & 3.3v & 1 \\
-\hline
-\end{tabular}
-\caption{RC522 to Raspberry Pi pin mapping}
-\label{table:RC522}
-\end{table}
-
-The terminal is created using a Raspberry PI with a RC522 circuit.  To connect the
-RC522, header pins are soldered onto the board and then wired to the PI GPIO pins.
-The RC522 board provides the interfaces listed in Table \ref{table:RC522} on page
-\pageref{table:RC522}.
+\begin{quote}
+I had initially purchased the RC522 module for the raspberry pi thinking that I
+would be able to communicateusing that.  It turns out that RC522 is an old
+chip and it doesn't support communication with Android devices.  A last minute
+google and I find out that I need a PN532 chip for communication with Android
+over NFC!
+\end{quote}
 
 
-We use python and the library MFCRF522 to interact with the circuit and provide the
-methods needed to read and write using NFC.
 
 \subsubsection{Bitcoin}
 The Raspberry Pi runs a \href{https://github.com/bitcoin/bitcoin}{bitcoin core} node
