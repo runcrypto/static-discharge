@@ -132,13 +132,15 @@ following
 Not entirely straight forward and had to add the following to
 \verb|/usr/nfc/libnfc.conf|
 
-Enable UART
-\begin{lstlisting}[language=bash]
-sudo echo 'enable_uart = true' >> /boot/config.txt
+\begin{lstlisting}[%
+	caption=Enable UART,
+	language=bash]
+sudo echo 'enablei\_uart = true' >> /boot/config.txt
 \end{lstlisting}
 
-Disable Bluetooth
-\begin{lstlisting}[language=bash]
+\begin{lstlisting}[%
+	caption=Disable bluetooth,
+	language=bash]
 sudo echo 'dtoverlay=pi3-disable-bt' >> /boot/config.txt
 sudo systemctl disable hciuart
 \end{lstlisting}
@@ -152,7 +154,7 @@ The Raspberry Pi runs a \href{https://github.com/bitcoin/bitcoin}{bitcoin core} 
 connected to the testnet3 network.
 
 \subsubsection{LND}
-An instance of \href{https://github.com/lightningnetwork/lnd){LND} is also running as
+An instance of \href{https://github.com/lightningnetwork/lnd}{LND} is also running as
 a backend for the mobile wallet\footnote{This was a comprimise as I had wanted a
 standalone app for the mobile device but the only wallet I could get running that I
 could easily develop with was the LN-Zap wallet}

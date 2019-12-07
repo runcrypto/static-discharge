@@ -1,12 +1,36 @@
 Overview
 ========
 
+With the theme of **Earn** on lightning I decided to look at current
+ways for making donations, with services like BottlePay. There are quite
+a few solutions available in the digital sphere but bringing that to the
+physical world is still has an underdeveloped UX.
+
+I wanted to hack a real world donations system, looking at state of the
+art tech from the fiat systems and creating a lightning implementation
+of them.
+
+> Anything you can do I can do better
+
 Near Field Communication (NFC) is used for contactless payment in bank
 cards and more recently it has been integrated into mobile phones for
 use in apps such as google or apple pay.\
-This project provides a secure transport layer for point of sale
+This project provides a secure transport layer for donations using
 lightning transactions by connecting devices over NFC and interfacing
 with existing lightning wallet implementations.
+
+Use Case
+========
+
+A real world example of a MFC donation system, we can look at systems
+provided by
+[goodbox](https://www.goodbox.com/2018/10/natural-history-museum/) that
+provide a way to donate contactlessly with your phone, debit or credit
+card.
+
+This is installed at the Natural History Museum in London that have
+always had donation boxes to support an otherwise free visitor
+attraction.
 
 Security
 ========
@@ -23,19 +47,6 @@ added to the transport of transaction data and greatly improve the
 security model of making a lightning payment through the range that the
 transaction data is visible and the ability to read the transaction data
 if it was intercepted.\
-
-Use Case
-========
-
-A real world example of a MFC point of sale system, we can look at
-systems that require a successful payment to gain access to transport.
-Transport For London use a system of NFC readers to allow travellers to
-pay for travel via NFC as an alternative to purchasing traditional paper
-tickets.\
-Users present their NFC device to a terminal that attempts to make a
-transaction that, if successful, unlocks the turnstile and allows them
-access to the train platform or informs the bus driver that payment has
-been received.\
 
 objectives
 ==========
@@ -79,26 +90,32 @@ Technical Specification
 
 ### NFC
 
-  **Description**       **Label**    **Pin**
-  --------------------- ----------- ---------
-  Serial Data Signal    SDA            24
-  Serial Clock          SCK            23
-  Master Out Slave In   MOSI           19
-  Master In Slave Out   MISO           21
-  Interrupt Request     IRQ           None
-  Ground Power          GND             6
-  Reset-Circuit         RST            22
-  (3.3v Power In        3.3v            1
+> I had initially purchased the RC522 module for the raspberry pi
+> thinking that I would be able to communicateusing that. It turns out
+> that RC522 is an old chip and it doesn’t support communication with
+> Android devices. A last minute google and I find out that I need a
+> PN532 chip for communication with Android over NFC!
 
-  : RC522 to Raspberry Pi pin mapping[]{data-label="table:RC522"}
+I wanted to use the python Library nfcpy as this offers a complete
+[Simple NDEF Exchange
+Protocol](https://nfcpy.readthedocs.io/en/latest/topics/snep.html)(SNEP)
+implementation that will greatly simplify development. . [**T**he python
+library nfcpy doesn’t support I2C or SPI connections.]{} Which leaves
+the UART connection which is far from simple but I managed to find the
+following [Instructions for connecting RC532 via
+UART](https://learn.adafruit.com/adafruit-nfc-rfid-on-raspberry-pi/building-libnfc)
 
-The terminal is created using a Raspberry PI with a RC522 circuit. To
-connect the RC522, header pins are soldered onto the board and then
-wired to the PI GPIO pins. The RC522 board provides the interfaces
-listed in Table \[table:RC522\] on page .
+Not entirely straight forward and had to add the following to
+`/usr/nfc/libnfc.conf`
 
-We use python and the library MFCRF522 to interact with the circuit and
-provide the methods needed to read and write using NFC.
+    sudo echo 'enablei\_uart = true' >> /boot/config.txt
+
+    sudo echo 'dtoverlay=pi3-disable-bt' >> /boot/config.txt
+    sudo systemctl disable hciuart
+
+Initially wanted to use I2C connection but couldn’t use nfcpy to
+communicate with the device so re-wired for SPI and then configured it
+as a Universal Asynchronous receiver/transmitter (UART)
 
 ### Bitcoin
 
@@ -108,7 +125,7 @@ network.
 
 ### LND
 
-An instance of (https://github.com/lightningnetwork/lnd)[LND]{} is also
+An instance of [LND](https://github.com/lightningnetwork/lnd) is also
 running as a backend for the mobile wallet[^1]
 
 The LND node was configured to avoid conflicting ports with the
