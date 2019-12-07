@@ -1,0 +1,3 @@
+[submodule "src/python/pyndef"]
+	path = src/python/pyndef
+	url = https://github.com/gassajor000/pyndef.git
