@@ -1,3 +1,3 @@
-[submodule "src/python/pyndef"]
-	path = src/python/pyndef
-	url = https://github.com/gassajor000/pyndef.git
+#[submodule "src/zap-android"]
+#	path = src/zap-android
+#	url = https://github.com/LN-Zap/zap-android.git

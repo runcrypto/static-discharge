@@ -6,9 +6,10 @@ ways for making donations, with services like BottlePay. There are quite
 a few solutions available in the digital sphere but bringing that to the
 physical world is still has an underdeveloped UX.
 
-I wanted to hack a real world donations system, looking at state of the
-art tech from the fiat systems and creating a lightning implementation
-of them.
+I want to bring lightning tipping to the streets with a low power
+tipping system that could be used by buskers or artists whilst
+performing in public. In this hack I look at the state of the art tech
+from fiat systems and create a lightning implementation of them.
 
 > Anything you can do I can do better
 
@@ -51,8 +52,8 @@ if it was intercepted.\
 objectives
 ==========
 
-From a design point of view we have a service (access to train platform)
-and 3 actors:
+From a design point of view we have a service (tipping point) and 3
+actors:
 
 -   **USER** the entity that requests a service
 
@@ -116,6 +117,23 @@ Not entirely straight forward and had to add the following to
 Initially wanted to use I2C connection but couldn’t use nfcpy to
 communicate with the device so re-wired for SPI and then configured it
 as a Universal Asynchronous receiver/transmitter (UART)
+
+After a couple of hours without success I reassessed and resolved that I
+only need the NFC device to emulate a tag so I found a
+[tutorial](https://salmg.net/2017/12/11/acr122upn532-nfc-card-emulation/)
+using pyscard.
+
+    sudo apt-get install python3-pyscard pcscd python3-setuptools swig \
+      libpcsclite-dev python3-dev
+
+I went back to nfcpy after soldering pins into a new PN532 board (the
+first had dodgy soldering and bad connections). I was then able to
+emulate a tt3 card using the script in the examples folder of nfcpy
+
+    pip3 install nfcpy ndeflib ndeftool
+    ./tagtool.py --device tty:S0 emulate ~/tag.ndef tt3
+
+After running this I was able to detect my android phone! Whoop whoop!
 
 ### Bitcoin
 
