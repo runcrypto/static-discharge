@@ -43,8 +43,10 @@ for making donations, with services like BottlePay.  There are quite a few
 solutions available in the digital sphere but bringing that to the physical
 world is still has an underdeveloped UX.
 
-I wanted to hack a real world donations system, looking at state of the art
-tech from the fiat systems and creating a lightning implementation of them.
+I want to bring lightning tipping to the streets with a low power tipping system
+that could be used by buskers or artists whilst performing in public.  In this
+hack I look at the state of the art tech from fiat systems and create a lightning
+implementation of them.
 
 \begin{quote}
 Anything you can do I can do better
@@ -81,8 +83,7 @@ lightning payment through the range that the transaction data is visible and the
 ability to read the transaction data if it was intercepted.\\
 
 \section{objectives}
-From a design point of view we have a service (access to train platform) and 3
-actors:
+From a design point of view we have a service (tipping point) and 3 actors:
 \begin{itemize}
     \item \textbf{USER} the entity that requests a service
     \item \textbf{DEVICE} used by the \textbf{USER} to interact with the service
@@ -132,13 +133,15 @@ following
 Not entirely straight forward and had to add the following to
 \verb|/usr/nfc/libnfc.conf|
 
-Enable UART
-\begin{lstlisting}[language=bash]
-sudo echo 'enable_uart = true' >> /boot/config.txt
+\begin{lstlisting}[%
+	caption=Enable UART,
+	language=bash]
+sudo echo 'enablei\_uart = true' >> /boot/config.txt
 \end{lstlisting}
 
-Disable Bluetooth
-\begin{lstlisting}[language=bash]
+\begin{lstlisting}[%
+	caption=Disable bluetooth,
+	language=bash]
 sudo echo 'dtoverlay=pi3-disable-bt' >> /boot/config.txt
 sudo systemctl disable hciuart
 \end{lstlisting}
@@ -147,12 +150,37 @@ Initially wanted to use I2C connection but couldn't use nfcpy to communicate wit
 the device so re-wired for SPI and then configured it as a Universal Asynchronous
 receiver/transmitter (UART)
 
+After a couple of hours without success I reassessed and resolved that I only need
+the NFC device to emulate a tag so I found a
+\href{https://salmg.net/2017/12/11/acr122upn532-nfc-card-emulation/}{tutorial} using
+pyscard.
+
+\begin{lstlisting}[%
+	caption=Install pyscard,
+	language=bash]
+sudo apt-get install python3-pyscard pcscd python3-setuptools swig \
+  libpcsclite-dev python3-dev
+\end{lstlisting}
+
+I went back to nfcpy after soldering pins into a new PN532 board (the first had 
+dodgy soldering and bad connections).
+I was then able to emulate a tt3 card using the script in the examples folder
+of nfcpy
+\begin{lstlisting}[%
+	caption=Test tag/card emulation,
+	language=bash]
+pip3 install nfcpy ndeflib ndeftool
+./tagtool.py --device tty:S0 emulate ~/tag.ndef tt3
+\end{lstlisting}
+
+After running this I was able to detect my android phone! Whoop whoop!
+
 \subsubsection{Bitcoin}
 The Raspberry Pi runs a \href{https://github.com/bitcoin/bitcoin}{bitcoin core} node
 connected to the testnet3 network.
 
 \subsubsection{LND}
-An instance of \href{https://github.com/lightningnetwork/lnd){LND} is also running as
+An instance of \href{https://github.com/lightningnetwork/lnd}{LND} is also running as
 a backend for the mobile wallet\footnote{This was a comprimise as I had wanted a
 standalone app for the mobile device but the only wallet I could get running that I
 could easily develop with was the LN-Zap wallet}

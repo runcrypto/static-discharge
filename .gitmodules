@@ -1,6 +1,6 @@
-[submodule "src/python/pyndef"]
-	path = src/python/pyndef
-	url = https://github.com/gassajor000/pyndef.git
 [submodule "src/nfcpy"]
 	path = src/nfcpy
-	url = git@hawkmauk-github.com:runcrypto/nfcpy.git
+	url = https://github.com/runcrypto/nfcpy.git
+[submodule "src/zap-android"]
+	path = src/zap-android
+	url = https://github.com/runcrypto/zap-android.git
